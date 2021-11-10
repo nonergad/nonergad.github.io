@@ -1,7 +1,25 @@
 
 import './App.css';
+import React,{useEffect, useState} from 'react';
+import Tiles from './Titles/Tiles';
+import GameOverScr from './GameOver/GameOverScr';
 
 function App() {
+  const [gameOver,setGameover] = useState(false)
+  const [gameWin,setWin] = useState(false)
+  const [board,setBoard] = useState([
+    [1024, 1024, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0]
+  ])
+  const [renderBoard, setRenderBoard] = useState([
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0]
+  ])
+
   const getEmptyBoard = () =>
     [
       [0, 0, 0, 0],
@@ -11,13 +29,18 @@ function App() {
     ]
 
   const valueCheck = (board, value) => {
+    let flag = false
     for (let x = 0; x < 4; x++) {
       for (let y = 0; y < 4; y++) {
-        if (board[x][y] === value) {
-          return true;
+        if (board[x][y] == value) {
+          flag = true;
         }
       }
-      return false;
+    }
+    if(!flag){
+      return false
+    } else{
+      return true
     }
   };
 
@@ -26,20 +49,20 @@ function App() {
   }
 
   const getRandomPosition = () => {
-    const xPos = Math.floor(Math.floor() * 4);
-    const yPos = Math.floor(Math.floor() * 4);
+    const x = Math.floor(Math.random() * 4)
+    const y = Math.floor(Math.random() * 4)
+    return [x,y]
   }
   
   const generateRandom = (board) => {
     if (isFull(board)) {
       return board
     }
-
-    let [x,y] = getRandomPosition();
-    while (board[x][y] !== 0) {
-      [x,y] = getRandomPosition();
+    let randomPos = getRandomPosition();
+    while (board[randomPos[0]][randomPos[1]] !== 0) {
+      randomPos = getRandomPosition();
     }
-    board[x][y] = 2;
+    board[randomPos[0]][randomPos[1]] = 2;
     return board;
   }
 
@@ -54,7 +77,6 @@ function App() {
         }
       }
     }
-    console.log(newBoard)
     return newBoard;
   }
 
@@ -104,95 +126,143 @@ function App() {
     return board;
   }
 
-  const mergeColumn = (board) => {
-    for (let x = 0; x < 3; x++){
-      for (let y = 0; y < 4; y++){
-        if (board[x][y] !== 0 && board[x][y] === board[x+1][y]){
-          board[x][y] = board[x][y] * 2;
-          board[x-1][y] = 0;
-        }
-      }
-    }
-    return board;
+  const left = () => {
+    let copyBoard = [...board]
+    copyBoard = swipeL(copyBoard);
+    copyBoard = mergeLine(copyBoard);
+    copyBoard = swipeL(copyBoard);
+    return copyBoard
+  }
+
+  const right = () => {
+    let copyBoard = [...board]
+    copyBoard = swipeR(copyBoard);
+    copyBoard = mergeLine(copyBoard);
+    copyBoard = swipeR(copyBoard);
+    return copyBoard
+  }
+
+  const up = () => {
+    let copyBoard = [...board]
+    copyBoard = rotateLeft(copyBoard);
+    copyBoard = swipeL(copyBoard);
+    copyBoard = mergeLine(copyBoard);
+    copyBoard = swipeL(copyBoard);
+    copyBoard = rotateRight(copyBoard);
+    return copyBoard
+  }
+
+  const down = () => {
+    let copyBoard = [...board]
+    copyBoard = rotateLeft(copyBoard);
+    copyBoard = swipeR(copyBoard);
+    copyBoard = mergeLine(copyBoard);
+    copyBoard = swipeR(copyBoard);
+    copyBoard = rotateRight(copyBoard);
+    return copyBoard
   }
 
   const moveLeft = () => {
-    board = swipeL(board);
-    board = mergeLine(board);
-    board = swipeL(board);
-    board = generateRandom(board);
+    let updatedBoard = left()
+    updatedBoard = generateRandom(updatedBoard);
+    return updatedBoard
   }
 
   const moveRight = () => {
-    swipeR(board);
-    mergeLine(board)
-    swipeR(board)
-    board = generateRandom(board);
+    let updatedBoard = right()
+    updatedBoard = generateRandom(updatedBoard);
+    return updatedBoard
   }
 
   const moveUp = () => {
-    board = rotateLeft(board);
-    board = swipeL(board);
-    board = mergeLine(board);
-    board = swipeL(board);
-    board = rotateRight(board);
-    board = generateRandom(board);
+    let updatedBoard = up()
+    updatedBoard = generateRandom(updatedBoard);
+    return updatedBoard
   }
 
   const moveDown = () => {
-    board = rotateLeft(board);
-    board = swipeR(board);
-    board = mergeLine(board);
-    board = swipeR(board);
-    board = rotateRight(board);
-    board = generateRandom(board);
+    let updatedBoard = down();
+    updatedBoard = generateRandom(updatedBoard);
+    return updatedBoard
   }
 
   const checkWin = (board) => {
-    return valueCheck(board, 2048);
+    if(valueCheck(board, 2048)) {
+      setWin(true)
+    }
   }
 
   const boardsSame = (board, newBoard) => {
-    for (let x = 0; x < 4; x++) {
-      for (let y = 0; y < 4; y++) {
-        if (board[x][y] !== newBoard[x][y]) {
-          return true;
-        }
-      }
+    const boardStr = JSON.stringify(board)
+    const newBoardStr = JSON.stringify(newBoard)
+    if (boardStr == newBoardStr) {
+      return true
     }
-    return false;
+    return false
   }
 
-  const gameOver = (board) => {
-    if (boardsSame(board, moveLeft(board))) {
+  const isGameOver = (board) => {
+    if (boardsSame(board, moveLeft())) {
       return false;
     }
-    if (boardsSame(board, moveRight(board))) {
+    if (boardsSame(board, moveRight())) {
       return false;
     }
-    if (boardsSame(board, moveUp(board))) {
+    if (boardsSame(board, moveUp())) {
       return false;
     }
-    if (boardsSame(board, moveDown(board))) {
+    if (boardsSame(board, moveDown())) {
       return false;
     }
-    return true;
+    setGameover(true)
   };
-
-  let board = 
-  [[0, 0, 2, 0],
-  [0, 2, 2, 4],
-  [2, 0, 2, 0],
-  [0, 2, 0, 0]];
   
-  console.log(board);
-  moveDown(board);
-  console.log(board);
+   const keyHandler = (e) => {
+     const copyBoard = [...board]
+      switch (e.key) {
+        case 'ArrowUp':
+          if (!boardsSame(board, up())) {
+            setBoard(moveUp());
+            checkWin(board);
+          }
+          break;
+        case 'ArrowRight':
+          if (!boardsSame(board, right())) {
+            setBoard(moveRight());
+            checkWin(board);
+          }
+          break;
+        case 'ArrowDown':
+          if (!boardsSame(board, down())) {
+            setBoard(moveDown());
+            checkWin(board);
+          }
+          break;
+        case 'ArrowLeft':
+          if (!boardsSame(board, left())) {
+            setBoard(moveLeft());
+            checkWin(board);
+          }
+          break;
+        default:
+          break;
+      }
+    }
 
+  useEffect(() => {
+    window.addEventListener('keyup', keyHandler)
+    return () => window.removeEventListener('keyup', keyHandler)
+  });
 
   return (
     <div className="App">
-      <p>s</p>
+      {gameOver ? <GameOverScr/> : 
+      board.map(element => {
+        return(
+          <Tiles arr={element}/>
+        )
+      })
+      }
     </div>
   );
 }

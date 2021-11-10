@@ -23,12 +23,12 @@ Tiles <kbd>&#9633;</kbd> with the same numbers will add up.
 Goal of the game to get 2048 <kbd>&#9633;</kbd> tile.
 
 ## Structure
-```
+`
 src/
 ├─ components/
-```
+`
 ## Libraries
-```
+`
 React
 SASS
-```
+`
