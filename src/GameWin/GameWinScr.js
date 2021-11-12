@@ -1,11 +1,11 @@
 import React from "react";
 import './GameOverScr.css'
 
-export default function GameOverWin({func}){
+export default function GameWinScr({func}){
     return (
         <div className='GameOverScr'>
             <div className='GameOverMenu'>
-                GameOver
+                You Won!
                 <button onClick={func}>Restart</button>
             </div>
         </div>
